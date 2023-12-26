@@ -1,0 +1,150 @@
+﻿@model IEnumerable<Repository.Models.Loan>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <button type="button" onclick="location.href='@Url.Action("Add", "Loan")'" class="btn btn-primary">Add</button>
+    <button id="editButton" type="button" onclick="editSelected()" style="display: none;">Edit Selected</button>
+    <button id="deleteButton" type="button" onclick="deleteSelected()" style="display: none;">Delete Selected</button>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th></th>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.LoanRequest)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Amount)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhoneNo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.status)
+            </th>
+            <th></th>
+            <th></th>
+            
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @if(item.status.StatusName != "Approved"){
+                        <input type="checkbox" value="@item.Id" />
+                        }
+                    
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.LoanRequest)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Amount)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PhoneNo)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Email)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.status.StatusName)
+                </td>
+                <td>
+                    @if (item.status.StatusName != "Approved" && item.status.StatusName != "Declined")
+                    {
+                        <form asp-action="Approve" method="post">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit">Approve</button>
+                        </form>
+                    }
+                </td>
+                <td>
+                    @if (item.status.StatusName != "Approved" && item.status.StatusName != "Declined")
+                    {
+                        <form asp-action="Decline" method="post">
+                            <input type="hidden" name="id" value="@item.Id" />
+                            <button type="submit">Decline</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script>
+    function editSelected() {
+        var selectedIds = getSelectedIds();
+        if (selectedIds.length === 1) {
+            window.location.href = '@Url.Action("Update", "Loan")/' + selectedIds[0];
+        } else {
+            alert('Please select only one row to edit.');
+        }
+    }
+
+    function deleteSelected() {
+        var selectedIds = getSelectedIds();
+        if (selectedIds.length > 0) {
+            // Send an AJAX request to the server to delete the selected rows
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Action("Delete", "Loan")',
+                data: { selectedIds: selectedIds },
+                traditional: true, // Ensure the array is sent correctly
+                success: function () {
+                    window.location.reload(); // Refresh the page after successful deletion
+                },
+                error: function () {
+                    alert('Error occurred while deleting selected rows.');
+                }
+            });
+        } else {
+            alert('Please select one or more rows to delete.');
+        }
+    }
+
+    function getSelectedIds() {
+        var selectedIds = [];
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        checkboxes.forEach(function (checkbox) {
+            selectedIds.push(checkbox.value);
+        });
+        return selectedIds;
+    }
+
+    // Show/hide buttons based on checkbox selection
+    document.addEventListener('change', function () {
+        var checkboxes = document.querySelectorAll('input[type="checkbox"]:checked');
+        var editButton = document.getElementById('editButton');
+        var deleteButton = document.getElementById('deleteButton');
+
+        if (checkboxes.length === 1) {
+            editButton.style.display = 'inline-block';
+        } else {
+            editButton.style.display = 'none';
+        }
+
+        if (checkboxes.length > 0) {
+            deleteButton.style.display = 'inline-block';
+        } else {
+            deleteButton.style.display = 'none';
+        }
+    });
+</script>
+
